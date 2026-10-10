@@ -11,10 +11,8 @@ const roniTriggers = [
     "জানু",
     "বেবি",
     "wifey",
-    "aliya",
-    "king",
-    "mrking",
-    "roni"
+    "aliya"
+    
 ];
 
 const baseApiUrl = "https://baby-one-zeta.vercel.app";
@@ -22,7 +20,7 @@ const baseApiUrl = "https://baby-one-zeta.vercel.app";
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bbu", "jan", "janu", "wifey", "bot", "aliya"],
-    version: "26.0",
+    version: "26.1",
     author: "Roni",
     countDown: 0,
     role: 0,
@@ -89,14 +87,14 @@ module.exports.onStart = async ({ api, event, args }) => {
     }
     
     const rawMsg = args ? args.join(" ") : "";
-    const msg = rawMsg.toLowerCase().trim();
-
+    
     try {
         if (!args[0]) {
             const ran = ["Bolo baby", "I love you", "Welcome to Aliya Bot! 😎"];
             return api.sendMessage(makeBold(ran[Math.floor(Math.random() * ran.length)]), event.threadID, event.messageID);
         }
 
+        const msg = rawMsg.toLowerCase().trim();
         if (msg === "list" || msg === "datacheck") {
             try {
                 const res = await axios.get(`${baseApiUrl}/api/jan/stats`);
@@ -162,28 +160,27 @@ module.exports.onChat = async ({ api, event }) => {
     try {
         if (module.exports.config.author !== "Roni") return;
 
-        // Prevent double response when replying to a message
         if (event.type === "message_reply") return;
 
-        const body = event.body ? event.body.toLowerCase() : "";
+        const body = event.body ? event.body.toLowerCase().trim() : "";
         const prefix = global.GoatBot?.config?.prefix || "!";
         
-        // Skip command prefix
         if (body.startsWith(prefix)) return;
 
-        const hasTrigger = roniTriggers.some(word => body.startsWith(word));
+        // Fixed trigger detection to handle variations like "bby hi", "baby kemon aso", etc., smoothly without duplicates
+        let matchedTrigger = null;
+        let queryText = "";
 
-        if (hasTrigger) {
-            api.setMessageReaction("🪽", event.messageID, () => {}, true);
-
-            let text = event.body || "";
-            for (const word of roniTriggers) {
-                if (body.startsWith(word)) {
-                    text = event.body.substring(word.length).trim();
-                    break;
-                }
+        for (const trigger of roniTriggers) {
+            if (body === trigger || body.startsWith(trigger + " ")) {
+                matchedTrigger = trigger;
+                queryText = event.body.substring(trigger.length).trim();
+                break;
             }
+        }
 
+        if (matchedTrigger) {
+            // Reaction removed as requested, only sending message with emoji
             const mediaReply = handleMediaCheck(event.attachments);
             if (mediaReply) {
                 return api.sendMessage(makeBold(mediaReply), event.threadID, (err, info) => {
@@ -198,7 +195,7 @@ module.exports.onChat = async ({ api, event }) => {
                 }, event.messageID);
             }
 
-            if (!text) {
+            if (!queryText) {
                 const randomMessage = [
                     "আমাকে ডাকলে ,আমি কিন্তূ কিস করে দেবো😘 ",
                     "গোলাপ ফুল এর জায়গায় আমি দিলাম তোমায় মেসেজ",
@@ -230,7 +227,7 @@ module.exports.onChat = async ({ api, event }) => {
                 }, event.messageID);
             }
 
-            const replyMsg = await fetchBotResponse(text);
+            const replyMsg = await fetchBotResponse(queryText);
 
             return api.sendMessage(makeBold(replyMsg), event.threadID, (err, info) => {
                 if (!err && info) {
@@ -247,4 +244,4 @@ module.exports.onChat = async ({ api, event }) => {
         console.error(err);
     }
 };
-
+            
