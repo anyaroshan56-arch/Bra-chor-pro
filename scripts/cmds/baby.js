@@ -19,7 +19,7 @@ const baseApiUrl = "https://baby-one-zeta.vercel.app";
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bbu", "jan", "janu", "wifey", "bot", "aliya"],
-    version: "26.5",
+    version: "26.6",
     author: "Roni",
     countDown: 0,
     role: 0,
@@ -49,7 +49,8 @@ const handleMediaCheck = (attachments) => {
             video: ["Mb nai bby pore dio", "ajaira sop video😒", "1 ta kidni de then dekhmu"],
             audio: ["Sent 100000000tk to bkash then I will listen", "aj boyra bole kisu sunte parlam na😤"],
             photo: ["iss amk picture diye potanor chesta 🌚😘", "pic dekhe ki hobe jokon mb e nai"],
-            animated_image: ["iss gif pic diye potanor chesta 🌚😘", "pic dekhe ki hobe jokon mb e nai"]
+            animated_image: ["iss gif pic diye potanor chesta 🌚😘", "pic dekhe ki hobe jokon mb e nai"],
+            sticker: ["ki re sticker dakhass keno 😾", "sticker na mukh diye kotha bolo 😸", "sticker pathiye ki bhabchho? 😼"]
         };
         if (replies[type]) {
             const list = replies[type];
@@ -88,7 +89,6 @@ module.exports.onStart = async ({ api, event, args }) => {
     const rawMsg = args ? args.join(" ") : "";
     
     try {
-        // Command call korle react dibe
         api.setMessageReaction("🪽", event.messageID, () => {}, true);
 
         if (!args[0]) {
@@ -134,15 +134,16 @@ module.exports.onStart = async ({ api, event, args }) => {
 module.exports.onReply = async ({ api, event }) => {
     if (module.exports.config.author !== "Roni") return;
     try {
-        // onReply-te reaction sorano hoyeche jate normal kothay react na jay
-
         const text = event.body || "";
         const mediaReply = handleMediaCheck(event.attachments);
         
         let replyMsg = mediaReply;
         if (!replyMsg) {
-            if (!text.trim()) return;
             replyMsg = await fetchBotResponse(text);
+        }
+
+        if (!replyMsg) {
+            replyMsg = await fetchBotResponse("fallback");
         }
 
         api.sendMessage(makeBold(replyMsg), event.threadID, (err, info) => {
@@ -183,7 +184,6 @@ module.exports.onChat = async ({ api, event }) => {
         }
 
         if (matchedTrigger) {
-            // Shudhu bot ke dakle (First trigger matched) eitaw 🪽 react dibe
             api.setMessageReaction("🪽", event.messageID, () => {}, true);
 
             const mediaReply = handleMediaCheck(event.attachments);
@@ -249,4 +249,4 @@ module.exports.onChat = async ({ api, event }) => {
         console.error(err);
     }
 };
-            
+    
