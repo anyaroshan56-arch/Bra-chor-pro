@@ -19,7 +19,7 @@ const baseApiUrl = "https://baby-one-zeta.vercel.app";
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bbu", "jan", "janu", "wifey", "bot", "aliya"],
-    version: "26.2",
+    version: "26.4",
     author: "Roni",
     countDown: 0,
     role: 0,
@@ -37,19 +37,9 @@ const makeBold = (text) => {
         n: "𝗻", o: "𝗼", p: "𝗽", q: "𝗾", r: "𝗿", s: "𝘀", t: "𝘁", u: "𝘂", v: "𝘃", w: "𝘄", x: "𝘅", y: "𝘆", z: "𝘇",
         A: "𝗔", B: "𝗕", C: "𝗖", D: "𝗗", E: "𝗘", F: "𝗙", G: "𝗚", H: "𝗛", I: "𝗜", J: "𝗝", K: "𝗞", L: "𝗟", M: "𝗠",
         N: "𝗡", O: "𝗢", P: "𝗣", Q: "𝗤", R: "𝗥", S: "𝗦", T: "𝗧", U: "𝗨", V: "𝗩", W: "𝗪", X: "𝗫", Y: "𝗬", Z: "𝗭",
-        "0": "𝟬", "1": "𝟭", "2": "𝟮", "3": "𝟯", "4": "𝟰", "5": "𝟱", "6": "𝟲", "7": "𝟳", "8": "𝟴", "9": "𝟵",
-        // Bangla Bold Unicode (Mathematical Sans-Serif Bold block for Bengali letters)
-        অ: "𝖮", আ: "𝖢", ই: "𝖨", ঈ: "𝖨", উ: "𝖴", ঊ: "𝖴", ঋ: "𝖱", এ: "𝖤", ঐ: "𝖮", ও: "𝖮", ঔ: "𝖮",
-        ক: "𝗸", খ: "𝘹", গ: "𝗀", ঘ: "𝗀", ঙ: "𝟻", চ: "𝗰", ছ: "𝖼", জ: "𝗃", ঝ: "𝗃", ঞ: "𝟻",
-        ট: "𝘁", ঠ: "𝘁", ড: "𝗱", ঢ: "𝗱", ণ: "𝟻", ত: "𝘁", থ: "𝘁", দ: "𝗱", ধ: "𝗱", ন: "𝗻",
-        প: "𝗽", ফ: "𝖿", ব: "𝗯", ভ: "𝓿", ম: "𝗺", য: "𝗒", র: "𝗿", ল: "𝗹", শ: "𝘀", ষ: "𝘀",
-        স: "𝘀", হ: "𝗵", ড়: "𝗱", ঢ়: "𝗱", য়: "𝗒", ৎ: "𝘁", ং: "𝟻", ঃ: "𝟻", ঁ: "𝟻",
-        া: "া", ি: "ি", ী: "ী", ু: "ু", ূ: "ূ", ৃ: "ৃ", ে: "ে", ৈ: "ৈ", ো: "ো", ৌ: "ৌ", ্: "्"
+        "0": "𝟬", "1": "𝟭", "2": "𝟮", "3": "𝟯", "4": "𝟰", "5": "𝟱", "6": "𝟲", "7": "𝟳", "8": "𝟴", "9": "𝟵"
     };
-    
-    // Fallback: Use standard Markdown bold wrapper `**text**` for Bangla/Symbols so they render bold across platforms
-    const transformed = text.split("").map(char => fonts[char] || char).join("");
-    return `**${transformed}**`;
+    return text.split("").map(char => fonts[char] || char).join("");
 };
 
 const handleMediaCheck = (attachments) => {
@@ -98,6 +88,9 @@ module.exports.onStart = async ({ api, event, args }) => {
     const rawMsg = args ? args.join(" ") : "";
     
     try {
+        // Reaction add kora holo
+        api.setMessageReaction("🪽", event.messageID, () => {}, true);
+
         if (!args[0]) {
             const ran = ["Bolo baby", "I love you", "Welcome to Aliya Bot! 😎"];
             return api.sendMessage(makeBold(ran[Math.floor(Math.random() * ran.length)]), event.threadID, event.messageID);
@@ -141,6 +134,8 @@ module.exports.onStart = async ({ api, event, args }) => {
 module.exports.onReply = async ({ api, event }) => {
     if (module.exports.config.author !== "Roni") return;
     try {
+        api.setMessageReaction("🪽", event.messageID, () => {}, true);
+
         const text = event.body || "";
         const mediaReply = handleMediaCheck(event.attachments);
         
@@ -188,6 +183,9 @@ module.exports.onChat = async ({ api, event }) => {
         }
 
         if (matchedTrigger) {
+            // Babu ba baby trigger hole reaction dibe
+            api.setMessageReaction("🪽", event.messageID, () => {}, true);
+
             const mediaReply = handleMediaCheck(event.attachments);
             if (mediaReply) {
                 return api.sendMessage(makeBold(mediaReply), event.threadID, (err, info) => {
@@ -251,4 +249,4 @@ module.exports.onChat = async ({ api, event }) => {
         console.error(err);
     }
 };
-        
+                                       
