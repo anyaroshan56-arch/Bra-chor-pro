@@ -6,7 +6,7 @@
     "i_user": "",
     "proxy": null,
     "userAgent": "Mozilla/5.0 (Linux; Android 12; M2102J20SG) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Mobile Safari/537.36",
-    "intervalGetNewCookie": 1440,
+    "intervalGetNewCookie": 0,
     "notes": "time the system automatically retrieves new cookies from email/password"
   },
   "antiInbox": false,
@@ -141,12 +141,12 @@
   "optionsFca": {
     "forceLogin": true,
     "listenEvents": true,
-    "updatePresence": true,
-    "listenTyping": true,
+    "updatePresence": false,
+    "listenTyping": false,
     "logLevel": "error",
     "selfListen": false,
     "selfListenEvent": true,
     "autoMarkDelivery": false,
-    "autoReconnect": false
+    "autoReconnect": true
   }
   }
