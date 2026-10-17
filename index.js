@@ -10,8 +10,8 @@ const { spawn } = require("child_process");
 const net = require("net");
 
 const BOT_FILE = "Aliya.js";
-const RESTART_DELAY = 1000;
-const MAX_CRASH_COUNT = 5;
+const RESTART_DELAY = 20000; // wait 20s before relaunch (fast relaunch = fast re-login = Facebook logs the ID out)
+const MAX_CRASH_COUNT = 3;
 const CRASH_RESET_TIME = 60000; // 1 min
 
 const BANNER = `
@@ -158,11 +158,11 @@ async function startBot() {
         lastCrashTime = currentTime;
 
         if (crashCount >= MAX_CRASH_COUNT) {
-            log("🚨", "CRASH_GUARD", `Too many crashes (${crashCount} times within 1 minute). Pausing restart for 30s to prevent spam...`);
+            log("🚨", "CRASH_GUARD", `Too many crashes (${crashCount} times within 1 minute). Pausing restart for 5 min to protect the account...`);
             setTimeout(() => {
                 crashCount = 0;
                 scheduleRestart();
-            }, 30000);
+            }, 300000); // 5 min pause
             return;
         }
 
