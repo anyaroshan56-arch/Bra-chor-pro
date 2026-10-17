@@ -285,7 +285,7 @@ function parseDelta(defaultFuncs, api, ctx, globalCallback, v) {
             threadID: (delta.deltaMessageReply.message.messageMetadata.threadKey.threadFbId ? delta.deltaMessageReply.message.messageMetadata.threadKey.threadFbId : delta.deltaMessageReply.message.messageMetadata.threadKey.otherUserFbId).toString(),
             messageID: delta.deltaMessageReply.message.messageMetadata.messageId,
             senderID: delta.deltaMessageReply.message.messageMetadata.actorFbId.toString(),
-            attachments: delta.deltaMessageReply.message.attachments.map(function(att) {
+            attachments: (delta.deltaMessageReply.message.attachments || []).map(function(att) {
               var mercury = JSON.parse(att.mercuryJSON);
               Object.assign(att, mercury);
               return att;
@@ -327,7 +327,7 @@ function parseDelta(defaultFuncs, api, ctx, globalCallback, v) {
               threadID: (delta.deltaMessageReply.repliedToMessage.messageMetadata.threadKey.threadFbId ? delta.deltaMessageReply.repliedToMessage.messageMetadata.threadKey.threadFbId : delta.deltaMessageReply.repliedToMessage.messageMetadata.threadKey.otherUserFbId).toString(),
               messageID: delta.deltaMessageReply.repliedToMessage.messageMetadata.messageId,
               senderID: delta.deltaMessageReply.repliedToMessage.messageMetadata.actorFbId.toString(),
-              attachments: delta.deltaMessageReply.repliedToMessage.attachments.map(function(att) {
+              attachments: (delta.deltaMessageReply.repliedToMessage.attachments || []).map(function(att) {
                 var mercury = JSON.parse(att.mercuryJSON);
                 Object.assign(att, mercury);
                 return att;
@@ -381,7 +381,7 @@ function parseDelta(defaultFuncs, api, ctx, globalCallback, v) {
                   threadID: callbackToReturn.threadID,
                   messageID: fetchData.message_id,
                   senderID: fetchData.message_sender.id.toString(),
-                  attachments: fetchData.message.blob_attachment.map(att => {
+                  attachments: (fetchData.message.blob_attachment || []).map(att => {
                     var x;
                     try {
                       x = utils._formatAttachment({ blob_attachment: att });
