@@ -255,7 +255,7 @@ async function getAppStateFromEmail(spin = { _start: () => { }, _stop: () => { }
 					if (message && isExit) {
 						spin._stop();
 						log.error("LOGIN FACEBOOK", message);
-						process.exit();
+						process.exit(3);
 					}
 
 					if (message) {
@@ -598,7 +598,7 @@ async function getAppStateToLogin(loginWithEmail) {
 		catch (err) {
 			spin._stop();
 			log.err("LOGIN FACEBOOK", getText('login', 'loginError'), err.message, err);
-			process.exit();
+			process.exit(3);
 		}
 	}
 	return appState;
@@ -630,8 +630,8 @@ async function startBot(loginWithEmail) {
 	try {
 		tooOldVersion = (await axios.get("https://raw.githubusercontent.com/ntkhang03/Goat-Bot-V2-Storage/main/tooOldVersions.txt", { timeout: 15000 })).data || "0.0.0";
 	}
-	catch (e) {
-		log.warn("VERSION", "Can't check version list (network issue), skipping: " + e.message);
+	catch (err) {
+		log.warn("VERSION", "Can't check old versions list (network error). Continuing...");
 	}
 	// nếu version cũ hơn
 	if ([-1, 0].includes(compareVersion(currentVersion, tooOldVersion))) {
@@ -703,10 +703,20 @@ async function startBot(loginWithEmail) {
 				if (facebookAccount.email && facebookAccount.password) {
 					return startBot(true);
 				}
-				// Login failed (ID logged out / cookie dead) => turn the whole server OFF.
-				// Port closes, index.js sees exit code 0 and shuts down too.
-				log.err("LOGIN FACEBOOK", "ID logged out / login failed. Server turning OFF...");
-				process.exit(0);
+				// —————————— CHECK DASHBOARD —————————— //
+				if (global.GoatBot.config.dashBoard?.enable == true) {
+					try {
+						await require("../../dashboard/app.js")(null);
+						log.info("DASHBOARD", getText('login', 'openDashboardSuccess'));
+					}
+					catch (err) {
+						log.err("DASHBOARD", getText('login', 'openDashboardError'), err);
+					}
+					return;
+				}
+				else {
+					process.exit(3);
+				}
 			}
 
 			global.GoatBot.fcaApi = api;
@@ -726,7 +736,7 @@ async function startBot(loginWithEmail) {
 
 			try {
 				// convert to promise
-				const item = await axios.get("https://raw.githubusercontent.com/Savage-Army/gban/refs/heads/main/gban.json", { timeout: 15000 });
+				const item = await axios.get("https://raw.githubusercontent.com/Savage-Army/gban/refs/heads/main/gban.json");
 				dataGban = item.data;
 
 				// ————————————————— CHECK BOT ————————————————— //
@@ -764,7 +774,9 @@ async function startBot(loginWithEmail) {
 					process.exit();
 			}
 			catch (e) {
-				log.warn('GBAN', "Can't check gban list (network issue), skipping: " + e.message);
+				console.log(e);
+				log.warn('GBAN', getText('login', 'checkGbanError') + " (continuing without GBAN data)");
+				dataGban = dataGban || {};
 			}
 			// ———————————————— NOTIFICATIONS ———————————————— //
 			let notification;
@@ -773,7 +785,8 @@ async function startBot(loginWithEmail) {
 				notification = getNoti.data;
 			}
 			catch (err) {
-				log.warn("NOTIFICATION", "Can't get notifications data, skipping.");
+				log.warn("NOTIFICATION", "Can't get notifications data. Continuing...");
+				notification = "";
 			}
 			if (global.GoatBot.config.autoRefreshFbstate == true) {
 				changeFbStateByCode = true;
@@ -857,9 +870,9 @@ async function startBot(loginWithEmail) {
 			if (global.GoatBot.config.dashBoard?.enable == true && dashBoardIsRunning == false) {
 				logColor('#f5ab00', createLine('DASHBOARD'));
 				try {
-					dashBoardIsRunning = true; // set BEFORE start so a re-login can never open it twice
 					await require("../../dashboard/app.js")(api);
 					log.info("DASHBOARD", getText('login', 'openDashboardSuccess'));
+					dashBoardIsRunning = true;
 				}
 				catch (err) {
 					log.err("DASHBOARD", getText('login', 'openDashboardError'), err);
@@ -895,6 +908,7 @@ async function startBot(loginWithEmail) {
 			// ——————————————————————————————————————————————————— //
 			const { restartListenMqtt } = global.GoatBot.config;
 			let intervalCheckLiveCookieAndRelogin = false;
+			let handlerActionFn = null;
 			// —————————————————— CALLBACK LISTEN —————————————————— //
 			async function callBackListen(error, event) {
 				if (error) {
@@ -912,14 +926,6 @@ async function startBot(loginWithEmail) {
 							isSendNotiErrorMessage = true;
 						}
 
-						// ID really logged out => turn the server OFF (index.js sees exit code 0 and stops too).
-						// "Connection refused" is only a temporary network problem, so that one still retries below.
-						if (String(error.error || "").startsWith("Not logged in")) {
-							log.err("LOGOUT", "ID logged out. Server turning OFF...");
-							setTimeout(() => process.exit(0), 3000); // small delay so error notifications can be sent
-							return;
-						}
-
 						if (global.GoatBot.config.autoRestartWhenListenMqttError)
 							process.exit(2);
 						else {
@@ -933,29 +939,33 @@ async function startBot(loginWithEmail) {
 							// log.dev("GET COOKIE SUCCESS");
 							// log.dev(cookieString);
 
-							let times = 5;
-
-							const spin = createOraDots(getText('login', 'retryCheckLiveCookie', times));
-							const countTimes = setInterval(() => {
-								times--;
-								if (times == 0)
-									times = 5;
-								spin.text = getText('login', 'retryCheckLiveCookie', times);
-							}, 1000);
-
 							if (intervalCheckLiveCookieAndRelogin == false) {
 								intervalCheckLiveCookieAndRelogin = true;
+								let times = 15;
+								const spin = createOraDots(getText('login', 'retryCheckLiveCookie', times));
+								const countTimes = setInterval(() => {
+									times--;
+									if (times <= 0)
+										times = 15;
+									spin.text = getText('login', 'retryCheckLiveCookie', times);
+								}, 1000);
 								const interval = setInterval(async () => {
-									const cookieIsLive = await checkLiveCookie(cookieString, facebookAccount.userAgent);
-									if (cookieIsLive) {
-										clearInterval(interval);
-										clearInterval(countTimes);
-										intervalCheckLiveCookieAndRelogin = false;
-										const keyListen = Date.now();
-										isSendNotiErrorMessage = false;
-										global.GoatBot.Listening = api.listenMqtt(createCallBackListen(keyListen));
+									try {
+										const cookieIsLive = await checkLiveCookie(cookieString, facebookAccount.userAgent);
+										if (cookieIsLive) {
+											clearInterval(interval);
+											clearInterval(countTimes);
+											spin._stop?.();
+											intervalCheckLiveCookieAndRelogin = false;
+											const keyListen = Date.now();
+											isSendNotiErrorMessage = false;
+											global.GoatBot.Listening = api.listenMqtt(createCallBackListen(keyListen));
+										}
 									}
-								}, 5000);
+									catch (err) {
+										log.warn("CHECK COOKIE", "Cookie check failed: " + (err && err.message || err));
+									}
+								}, 15000);
 							}
 						}
 						return;
@@ -1064,13 +1074,12 @@ async function startBot(loginWithEmail) {
 						return;
 				}
 
-				const handlerAction = require("../handler/handlerAction.js")(api, threadModel, userModel, dashBoardModel, globalModel, usersData, threadsData, dashBoardData, globalData);
-                                if (hasBanned === false) {
-                                        console.log("🔥 HANDLER_CALL:", event.messageID, event.body);
-                                        handlerAction(event);
-                                }
-                                else
-                                        return log.err("GBAN", getText("login", "youAreBanned"));
+				if (hasBanned !== false)
+					return log.err("GBAN", getText("login", "youAreBanned"));
+
+				if (!handlerActionFn)
+					handlerActionFn = require("../handler/handlerAction.js")(api, threadModel, userModel, dashBoardModel, globalModel, usersData, threadsData, dashBoardData, globalData);
+				Promise.resolve(handlerActionFn(event)).catch(err => log.err("HANDLER_ACTION", err));
 			}
 			// ————————————————— CREATE CALLBACK ————————————————— //
 			function createCallBackListen(key) {
@@ -1090,12 +1099,8 @@ async function startBot(loginWithEmail) {
 				const express = require('express');
 				const app = express();
 				const server = http.createServer(app);
-				let html = "<h1>Aliya Bot is running</h1>";
-				try {
-					html = (await axios.get("https://raw.githubusercontent.com/ntkhang03/resources-goat-bot/master/homepage/home.html", { timeout: 15000 })).data;
-				}
-				catch (e) { /* use fallback page */ }
-				const PORT = Number(process.env.PORT) || global.GoatBot.config.dashBoard?.port || (!isNaN(global.GoatBot.config.serverUptime.port) && global.GoatBot.config.serverUptime.port) || 3001;
+				const { data: html } = await axios.get("https://raw.githubusercontent.com/ntkhang03/resources-goat-bot/master/homepage/home.html");
+				const PORT = global.GoatBot.config.dashBoard?.port || (!isNaN(global.GoatBot.config.serverUptime.port) && global.GoatBot.config.serverUptime.port) || 3001;
 				app.get('/', (req, res) => res.send(html));
 				app.get('/uptime', global.responseUptimeCurrent);
 				let nameUpTime;
@@ -1106,10 +1111,7 @@ async function startBot(loginWithEmail) {
 							`${process.env.PROJECT_DOMAIN}.glitch.me` :
 							`localhost:${PORT}`}`;
 					nameUpTime.includes('localhost') && (nameUpTime = nameUpTime.replace('https', 'http'));
-					await new Promise((resolve, reject) => {
-						server.once("error", reject);
-						server.listen(PORT, "0.0.0.0", () => { server.removeListener("error", reject); resolve(); });
-					});
+					await server.listen(PORT);
 					log.info("UPTIME", getText('login', 'openServerUptimeSuccess', nameUpTime));
 					if (global.GoatBot.config.serverUptime.socket?.enable == true)
 						require('./socketIO.js')(server);
