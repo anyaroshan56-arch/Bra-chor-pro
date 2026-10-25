@@ -19,7 +19,7 @@ const baseApiUrl = "https://baby-one-zeta.vercel.app";
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bbu", "jan", "janu", "wifey", "bot", "aliya"],
-    version: "26.6",
+    version: "26.7",
     author: "Roni",
     countDown: 0,
     role: 0,
@@ -35,7 +35,7 @@ const makeBold = (text) => {
     const fonts = {
         a: "𝗮", b: "𝗯", c: "𝗰", d: "𝗱", e: "𝗲", f: "𝗳", g: "𝗴", h: "𝗵", i: "𝗶", j: "𝗷", k: "𝗸", l: "𝗹", m: "𝗺",
         n: "𝗻", o: "𝗼", p: "𝗽", q: "𝗾", r: "𝗿", s: "𝘀", t: "𝘁", u: "𝘂", v: "𝘃", w: "𝘄", x: "𝘅", y: "𝘆", z: "𝘇",
-        A: "𝗔", B: "𝗕", C: "𝗖", D: "𝗗", E: "𝗘", F: "𝗙", G: "𝗚", H: "𝗛", I: "𝗜", J: "𝗝", K: "Ｋ", L: "𝗟", M: "𝗠",
+        A: "𝗔", B: "𝗕", C: "𝗖", D: "𝗗", E: "𝗘", F: "𝗙", G: "𝗚", H: "𝗛", I: "𝗜", J: "𝗝", K: "𝗞", L: "𝗟", M: "𝗠",
         N: "𝗡", O: "𝗢", P: "𝗣", Q: "𝗤", R: "𝗥", S: "𝗦", T: "𝗧", U: "𝗨", V: "𝗩", W: "𝗪", X: "𝗫", Y: "𝗬", Z: "𝗭",
         "0": "𝟬", "1": "𝟭", "2": "𝟮", "3": "𝟯", "4": "𝟰", "5": "𝟱", "6": "𝟲", "7": "𝟳", "8": "𝟴", "9": "𝟵"
     };
@@ -89,7 +89,7 @@ module.exports.onStart = async ({ api, event, args }) => {
     const rawMsg = args ? args.join(" ") : "";
     
     try {
-        api.setMessageReaction("🪽", event.messageID, () => {}, true);
+        api.setMessageReaction("🌸", event.messageID, () => {}, true);
 
         if (!args[0]) {
             const ran = ["Bolo baby", "I love you", "Welcome to Aliya Bot! 😎"];
@@ -101,7 +101,7 @@ module.exports.onStart = async ({ api, event, args }) => {
             try {
                 const res = await axios.get(`${baseApiUrl}/api/jan/stats`);
                 if (res.data && res.data.success) {
-                    const stats = `🐤 | Total Triggers = ${res.data.totalTeach}\n♻️ | Total Responses = ${res.data.totalResponses}\n💾 | Data Size = ${res.data.dataSize}`;
+                    const stats = `🌸✨ ════════════════ ✨🌸\n  🌷 𝗧𝗼𝘁𝗮𝗹 𝗧𝗿𝗶𝗴𝗴𝗲𝗿𝘀: ${res.data.totalTeach} 🌷\n  🌻 𝗧𝗼𝘁𝗮𝗹 𝗥𝗲𝘀𝗽𝗼𝗻𝘀𝗲𝘀: ${res.data.totalResponses} 🌻\n  🌺 𝗗𝗮𝘁𝗮 𝗦𝗶𝘇𝗲: ${res.data.dataSize} 🌺\n🌸✨ ════════════════ ✨🌸`;
                     return api.sendMessage(makeBold(stats), event.threadID, event.messageID);
                 }
             } catch (e) {
@@ -184,7 +184,7 @@ module.exports.onChat = async ({ api, event }) => {
         }
 
         if (matchedTrigger) {
-            api.setMessageReaction("🪽", event.messageID, () => {}, true);
+            api.setMessageReaction("🌸", event.messageID, () => {}, true);
 
             const mediaReply = handleMediaCheck(event.attachments);
             if (mediaReply) {
@@ -202,22 +202,22 @@ module.exports.onChat = async ({ api, event }) => {
 
             if (!queryText) {
                 const randomMessage = [
-                    "আমাকে ডাকলে ,আমি কিন্তূ কিস করে দেবো😘 ",
-                    "গোলাপ ফুল এর জায়গায় আমি দিলাম তোমায় মেসেজ",
-                    "বলো কি বলবা, সবার সামনে বলবা নাকি?🤭🤏",
-                    "𝗜 𝗹𝗼𝘃𝗲 𝘆𝗼𝘂__😘😘",
-                    "𝗕𝗯𝘆 𝗕𝗯𝘆 না করে আমার বস মানে, Roni ,Roni ও তো করতে পারো😑?",
-                    "আমার সোনার বাংলা, তারপরে লাইন কি? 🙈",
-                    "🍺 এই নাও জুস খাও..!𝗕𝗯𝘆 বলতে বলতে হাপায় গেছো না 🥲",
-                    "হটাৎ আমাকে মনে পড়লো 🙄",
-                    "𝗔𝘀𝘀𝗮𝗹𝗮𝗺𝘂𝗹𝗮𝗶𝗸𝘂𝗺 🐤🐤",
-                    "আমি তোমার সিনিয়র আপু ওকে 😼সম্মান দেও🙁",
-                    "খাওয়া দাওয়া করসো 🙄",
-                    "এত কাছেও এসো না,প্রেম এ পরে যাবো তো 🙈",
-                    "𝗛𝗲𝘆 𝗛𝗮𝗻𝗱𝘀𝗼𝗺𝗲 বলো 😁😁",
-                    "আরে Bolo আমার জান, কেমন আসো? 😚",
-                    "oi mama ar dakis na pilis 😿",
-                    "amr JaNu lagbe,Tumi ki single aso?"
+                    "🌸 আমাকে ডাকলে ,আমি কিন্তূ কিস করে দেবো😘 🌸",
+                    "🌷 গোলাপ ফুল এর জায়গায় আমি দিলাম তোমায় মেসেজ 🌷",
+                    "🌻 বলো কি বলবা, সবার সামনে বলবা নাকি?🤭🤏 🌻",
+                    "🌺 𝗜 𝗹𝗼𝘃𝗲 𝘆𝗼𝘂__😘😘 🌺",
+                    "🌹 𝗕𝗯𝘆 𝗕𝗯𝘆 না করে আমার বস মানে, Roni ,Roni ও তো করতে পারো😑? 🌹",
+                    "🌷 আমার সোনার বাংলা, তারপরে লাইন কি? 🙈 🌷",
+                    "🌸 🍺 এই নাও জুস খাও..!𝗕𝗯𝘆 বলতে বলতে হাপায় গেছো না 🥲 🌸",
+                    "🌻 হটাৎ আমাকে মনে পড়লো 🙄 🌻",
+                    "🌺 𝗔𝘀𝘀𝗮𝗹𝗮𝗺𝘂𝗹𝗮𝗶𝗸𝘂𝗺 🐤🐤 🌺",
+                    "🌹 আমি তোমার সিনিয়র আপু ওকে 😼সম্মান দেও🙁 🌹",
+                    "🌷 খাওয়া দাওয়া করসো 🙄 🌷",
+                    "🌸 এত কাছেও এসো না,প্রেম এ পরে যাবো তো 🙈 🌸",
+                    "🌻 𝗛𝗲𝘆 𝗛𝗮𝗻𝗱𝘀𝗼𝗺𝗲 বলো 😁😁 🌻",
+                    "🌺 আরে Bolo আমার জান, কেমন আসো? 😚 🌺",
+                    "🌹 oi mama ar dakis na pilis 😿 🌹",
+                    "🌷 amr JaNu lagbe,Tumi ki single aso? 🌷"
                 ];
                 const babyMessage = randomMessage[Math.floor(Math.random() * randomMessage.length)];
                 return api.sendMessage(makeBold(babyMessage), event.threadID, (err, info) => {
@@ -249,4 +249,4 @@ module.exports.onChat = async ({ api, event }) => {
         console.error(err);
     }
 };
-    
+        
